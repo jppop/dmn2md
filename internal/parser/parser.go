@@ -8,22 +8,22 @@ import (
 	"github.com/jppop/dmn2md/internal/model"
 )
 
-// ParseFile lit un fichier DMN et retourne la première DecisionTable trouvée.
-func ParseFile(path string) (model.DecisionTable, error) {
+// ParseFile lit un fichier DMN et retourne les Definitions complètes.
+func ParseFile(path string) (*model.Definitions, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return model.DecisionTable{}, fmt.Errorf("ouverture du fichier DMN : %w", err)
+		return nil, fmt.Errorf("ouverture du fichier DMN : %w", err)
 	}
 	defer f.Close()
 
 	var defs model.Definitions
 	if err := xml.NewDecoder(f).Decode(&defs); err != nil {
-		return model.DecisionTable{}, fmt.Errorf("décodage XML : %w", err)
+		return nil, fmt.Errorf("décodage XML : %w", err)
 	}
 
 	if len(defs.Decisions) == 0 {
-		return model.DecisionTable{}, fmt.Errorf("aucune <decision> trouvée dans %s", path)
+		return nil, fmt.Errorf("aucune <decision> trouvée dans %s", path)
 	}
 
-	return defs.Decisions[0].DecisionTable, nil
+	return &defs, nil
 }

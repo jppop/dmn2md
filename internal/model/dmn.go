@@ -2,14 +2,34 @@ package model
 
 // Definitions est la racine d'un fichier DMN (élément <definitions>).
 type Definitions struct {
+	Name      string     `xml:"name,attr"`
+	Namespace string     `xml:"namespace,attr"`
 	Decisions []Decision `xml:"decision"`
 }
 
 // Decision représente un élément <decision>.
 type Decision struct {
-	ID            string        `xml:"id,attr"`
-	Name          string        `xml:"name,attr"`
-	DecisionTable DecisionTable `xml:"decisionTable"`
+	ID                      string                   `xml:"id,attr"`
+	Name                    string                   `xml:"name,attr"`
+	InformationRequirements []InformationRequirement `xml:"informationRequirement"`
+	DecisionTable           *DecisionTable           `xml:"decisionTable"`
+	LiteralExpression       *LiteralExpression       `xml:"literalExpression"`
+}
+
+// InformationRequirement représente un élément <informationRequirement>.
+type InformationRequirement struct {
+	ID               string           `xml:"id,attr"`
+	RequiredDecision RequiredDecision `xml:"requiredDecision"`
+}
+
+// RequiredDecision représente l'élément <requiredDecision> avec son href.
+type RequiredDecision struct {
+	Href string `xml:"href,attr"`
+}
+
+// LiteralExpression représente un élément <literalExpression>.
+type LiteralExpression struct {
+	Text string `xml:"text"`
 }
 
 // DecisionTable représente un élément <decisionTable>.
