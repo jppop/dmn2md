@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             name="Loan Approval" namespace="http://example.com/loan">
+
+  <decision id="eligibility" name="Eligibility">
+    <decisionTable id="dt_eligibility" hitPolicy="FIRST">
+      <input id="i_age" label="Age">
+        <inputExpression typeRef="integer"><text>age</text></inputExpression>
+      </input>
+      <input id="i_employment" label="Employment Status">
+        <inputExpression typeRef="string"><text>employmentStatus</text></inputExpression>
+      </input>
+      <output id="o_eligible" label="Is Eligible" typeRef="boolean"/>
+      <rule id="r1">
+        <inputEntry><text>&lt; 18</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>false</text></outputEntry>
+      </rule>
+      <rule id="r2">
+        <inputEntry><text>&gt;= 18</text></inputEntry>
+        <inputEntry><text>"employed","self-employed"</text></inputEntry>
+        <outputEntry><text>true</text></outputEntry>
+      </rule>
+      <rule id="r3">
+        <inputEntry><text>&gt;= 18</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>false</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <decision id="risk_score" name="Risk Score">
+    <informationRequirement id="ir1">
+      <requiredDecision href="#eligibility"/>
+    </informationRequirement>
+    <decisionTable id="dt_risk" hitPolicy="UNIQUE">
+      <input id="i_eligible" label="Is Eligible">
+        <inputExpression typeRef="boolean"><text>isEligible</text></inputExpression>
+      </input>
+      <input id="i_amount" label="Loan Amount">
+        <inputExpression typeRef="integer"><text>loanAmount</text></inputExpression>
+      </input>
+      <output id="o_risk" label="Risk Level" typeRef="string"/>
+      <rule id="r4">
+        <inputEntry><text>false</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>"high"</text></outputEntry>
+      </rule>
+      <rule id="r5">
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>&lt;= 10000</text></inputEntry>
+        <outputEntry><text>"low"</text></outputEntry>
+      </rule>
+      <rule id="r6">
+        <inputEntry><text>true</text></inputEntry>
+        <inputEntry><text>&gt; 10000</text></inputEntry>
+        <outputEntry><text>"medium"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <decision id="final_decision" name="Final Decision">
+    <informationRequirement id="ir2">
+      <requiredDecision href="#risk_score"/>
+    </informationRequirement>
+    <literalExpression>
+      <text>if riskLevel = "low" then "approved" else if riskLevel = "medium" then "manual review" else "rejected"</text>
+    </literalExpression>
+  </decision>
+
+</definitions>
