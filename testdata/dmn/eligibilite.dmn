@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             name="Eligibilite" namespace="http://example.com/eligibilite">
+  <decision id="eligibilite" name="Eligibilité">
+    <decisionTable id="decisionTable_1" hitPolicy="FIRST">
+      <input id="input_age" label="Âge">
+        <inputExpression typeRef="integer">
+          <text>age</text>
+        </inputExpression>
+      </input>
+      <input id="input_statut" label="Statut">
+        <inputExpression typeRef="string">
+          <text>statut</text>
+        </inputExpression>
+      </input>
+      <output id="output_1" label="Résultat" typeRef="string"/>
+      <rule id="rule_1">
+        <inputEntry><text>&lt; 18</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>"Refusé"</text></outputEntry>
+      </rule>
+      <rule id="rule_2">
+        <inputEntry><text>>= 18</text></inputEntry>
+        <inputEntry><text>"actif"</text></inputEntry>
+        <outputEntry><text>"Accepté"</text></outputEntry>
+      </rule>
+      <rule id="rule_3">
+        <inputEntry><text>>= 18</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>"En attente"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
