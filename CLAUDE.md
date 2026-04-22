@@ -1,8 +1,14 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # dmn2md — Convertisseur DMN → Markdown pour Claude Code
 
 ## Contexte du projet
 Outil CLI Go qui parse des fichiers DMN (Decision Model and Notation, format XML)
 et génère du Markdown structuré utilisable comme skills/commandes Claude Code.
+
+Module Go : `github.com/jppop/dmn2md`
 
 Développeur : background Java expérimenté, débutant en Go.
 → Toujours expliquer les idiomes Go avec des analogies Java quand c'est utile.
@@ -28,6 +34,9 @@ go test -v ./...
 # Tests d'un package spécifique
 go test -v ./internal/parser/...
 
+# Un seul test par nom
+go test -v -run TestNomDuTest ./internal/parser/...
+
 # Linter
 golangci-lint run
 
@@ -35,8 +44,12 @@ golangci-lint run
 gofumpt -w .
 ```
 
-## Architecture
+## Architecture cible
 
+Le projet est en cours d'initialisation. Seul `cmd/dmn2md/main.go` existe aujourd'hui.
+Les packages `internal/` sont à créer selon la structure ci-dessous :
+
+```
 dmn2md/
 ├── cmd/dmn2md/main.go       # Point d'entrée CLI (cobra) — ≈ Main class Java
 ├── internal/
@@ -48,22 +61,25 @@ dmn2md/
 │       ├── markdown.go      # Tables Markdown classiques
 │       └── skill.go         # Format structuré Claude Code skill/command
 ├── testdata/
-│   ├── dmn/                 # Fichiers .dmn de test
-│   └── expected/            # Markdown attendu (golden files)
+│   ├── dmn/                 # Fichiers .dmn de test (eligibilite.dmn existe)
+│   └── expected/            # Markdown attendu (golden files, à créer)
 └── CLAUDE.md
+```
 
 ## Modèle DMN ciblé
 
 Le DMN est du XML. Structure principale à parser :
 - `<definitions>` → racine
 - `<decision>` → une table de décision
-- `<decisionTable>` → contient inputs, outputs, rules
-- `<input>` / `<output>` → colonnes
+- `<decisionTable hitPolicy="...">` → contient inputs, outputs, rules
+- `<input>` / `<output>` → colonnes (avec `label` et `inputExpression`)
 - `<rule>` → une ligne = N inputEntry + M outputEntry
 
+Namespace XML utilisé : `https://www.omg.org/spec/DMN/20191111/MODEL/`
+
 ## Formats de sortie Markdown
-Deux modes (flag --format) :
-- `table` (défaut) : table Markdown standard | col | col |
+Deux modes (flag `--format`) :
+- `table` (défaut) : table Markdown standard `| col | col |`
 - `skill` : format structuré pour Claude Code skills/commands
 
 ## Conventions Go à respecter
