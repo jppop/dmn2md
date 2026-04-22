@@ -1,70 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
-             name="Loan Approval" namespace="http://example.com/loan">
+             id="loanApproval"
+             name="Loan Approval"
+             namespace="http://example.com/loan-approval">
 
-  <decision id="eligibility" name="Eligibility">
-    <decisionTable id="dt_eligibility" hitPolicy="FIRST">
+  <!-- ═══════════════════════════════════════════
+       Decision 1 — Applicant Risk Rating
+       Type: Decision Table
+       Inputs: age, employmentStatus, creditScore
+       Output: riskRating
+  ═══════════════════════════════════════════ -->
+  <decision id="applicantRiskRating" name="Applicant Risk Rating">
+    <decisionTable id="dt_riskRating" hitPolicy="FIRST">
       <input id="i_age" label="Age">
-        <inputExpression typeRef="integer"><text>age</text></inputExpression>
+        <inputExpression id="ie_age" typeRef="integer">
+          <text>age</text>
+        </inputExpression>
       </input>
       <input id="i_employment" label="Employment Status">
-        <inputExpression typeRef="string"><text>employmentStatus</text></inputExpression>
+        <inputExpression id="ie_employment" typeRef="string">
+          <text>employmentStatus</text>
+        </inputExpression>
       </input>
-      <output id="o_eligible" label="Is Eligible" typeRef="boolean"/>
-      <rule id="r1">
+      <input id="i_credit" label="Credit Score">
+        <inputExpression id="ie_credit" typeRef="integer">
+          <text>creditScore</text>
+        </inputExpression>
+      </input>
+      <output id="o_risk" label="Risk Rating" name="riskRating" typeRef="string"/>
+      <rule id="r_risk_1">
+        <description>Minor applicant — always high risk</description>
         <inputEntry><text>&lt; 18</text></inputEntry>
         <inputEntry><text>-</text></inputEntry>
-        <outputEntry><text>false</text></outputEntry>
-      </rule>
-      <rule id="r2">
-        <inputEntry><text>&gt;= 18</text></inputEntry>
-        <inputEntry><text>"employed","self-employed"</text></inputEntry>
-        <outputEntry><text>true</text></outputEntry>
-      </rule>
-      <rule id="r3">
-        <inputEntry><text>&gt;= 18</text></inputEntry>
-        <inputEntry><text>-</text></inputEntry>
-        <outputEntry><text>false</text></outputEntry>
-      </rule>
-    </decisionTable>
-  </decision>
-
-  <decision id="risk_score" name="Risk Score">
-    <informationRequirement id="ir1">
-      <requiredDecision href="#eligibility"/>
-    </informationRequirement>
-    <decisionTable id="dt_risk" hitPolicy="UNIQUE">
-      <input id="i_eligible" label="Is Eligible">
-        <inputExpression typeRef="boolean"><text>isEligible</text></inputExpression>
-      </input>
-      <input id="i_amount" label="Loan Amount">
-        <inputExpression typeRef="integer"><text>loanAmount</text></inputExpression>
-      </input>
-      <output id="o_risk" label="Risk Level" typeRef="string"/>
-      <rule id="r4">
-        <inputEntry><text>false</text></inputEntry>
         <inputEntry><text>-</text></inputEntry>
         <outputEntry><text>"high"</text></outputEntry>
       </rule>
-      <rule id="r5">
-        <inputEntry><text>true</text></inputEntry>
-        <inputEntry><text>&lt;= 10000</text></inputEntry>
+      <rule id="r_risk_2">
+        <description>Excellent credit score</description>
+        <inputEntry><text>&gt;= 18</text></inputEntry>
+        <inputEntry><text>"employed","self-employed"</text></inputEntry>
+        <inputEntry><text>&gt;= 750</text></inputEntry>
         <outputEntry><text>"low"</text></outputEntry>
       </rule>
-      <rule id="r6">
-        <inputEntry><text>true</text></inputEntry>
-        <inputEntry><text>&gt; 10000</text></inputEntry>
+      <rule id="r_risk_3">
+        <description>Good profile</description>
+        <inputEntry><text>&gt;= 18</text></inputEntry>
+        <inputEntry><text>"employed","self-employed"</text></inputEntry>
+        <inputEntry><text>[600..750)</text></inputEntry>
         <outputEntry><text>"medium"</text></outputEntry>
+      </rule>
+      <rule id="r_risk_4">
+        <description>Poor credit or unemployed</description>
+        <inputEntry><text>&gt;= 18</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>"high"</text></outputEntry>
       </rule>
     </decisionTable>
   </decision>
 
-  <decision id="final_decision" name="Final Decision">
-    <informationRequirement id="ir2">
-      <requiredDecision href="#risk_score"/>
+  <!-- ═══════════════════════════════════════════
+       Decision 2 — Loan Eligibility
+       Type: Decision Table
+       Depends on: Applicant Risk Rating
+       Inputs: riskRating, loanAmount, loanDuration
+       Output: isEligible
+  ═══════════════════════════════════════════ -->
+  <decision id="loanEligibility" name="Loan Eligibility">
+    <informationRequirement id="ir_risk">
+      <requiredDecision href="#applicantRiskRating"/>
     </informationRequirement>
-    <literalExpression>
-      <text>if riskLevel = "low" then "approved" else if riskLevel = "medium" then "manual review" else "rejected"</text>
+    <decisionTable id="dt_eligibility" hitPolicy="UNIQUE">
+      <input id="i_riskRating" label="Risk Rating">
+        <inputExpression id="ie_riskRating" typeRef="string">
+          <text>riskRating</text>
+        </inputExpression>
+      </input>
+      <input id="i_amount" label="Loan Amount">
+        <inputExpression id="ie_amount" typeRef="integer">
+          <text>loanAmount</text>
+        </inputExpression>
+      </input>
+      <input id="i_duration" label="Loan Duration (months)">
+        <inputExpression id="ie_duration" typeRef="integer">
+          <text>loanDuration</text>
+        </inputExpression>
+      </input>
+      <output id="o_eligible" label="Is Eligible" name="isEligible" typeRef="boolean"/>
+      <rule id="r_elig_1">
+        <description>High risk — always rejected</description>
+        <inputEntry><text>"high"</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>false</text></outputEntry>
+      </rule>
+      <rule id="r_elig_2">
+        <description>Low risk — any amount and duration accepted</description>
+        <inputEntry><text>"low"</text></inputEntry>
+        <inputEntry><text>&lt;= 100000</text></inputEntry>
+        <inputEntry><text>&lt;= 240</text></inputEntry>
+        <outputEntry><text>true</text></outputEntry>
+      </rule>
+      <rule id="r_elig_3">
+        <description>Medium risk — limited amount and duration</description>
+        <inputEntry><text>"medium"</text></inputEntry>
+        <inputEntry><text>&lt;= 50000</text></inputEntry>
+        <inputEntry><text>&lt;= 120</text></inputEntry>
+        <outputEntry><text>true</text></outputEntry>
+      </rule>
+      <rule id="r_elig_4">
+        <description>All other cases rejected</description>
+        <inputEntry><text>-</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <inputEntry><text>-</text></inputEntry>
+        <outputEntry><text>false</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <!-- ═══════════════════════════════════════════
+       Decision 3 — Final Decision
+       Type: Literal Expression (FEEL)
+       Depends on: Loan Eligibility, Applicant Risk Rating
+       Output: decision (string)
+  ═══════════════════════════════════════════ -->
+  <decision id="finalDecision" name="Final Decision">
+    <informationRequirement id="ir_eligibility">
+      <requiredDecision href="#loanEligibility"/>
+    </informationRequirement>
+    <informationRequirement id="ir_riskForFinal">
+      <requiredDecision href="#applicantRiskRating"/>
+    </informationRequirement>
+    <variable id="var_final" name="finalDecision" typeRef="string"/>
+    <literalExpression id="le_final">
+      <text>if isEligible and riskRating = "low" then "approved"
+else if isEligible and riskRating = "medium" then "approved with conditions"
+else "rejected"</text>
     </literalExpression>
   </decision>
 
