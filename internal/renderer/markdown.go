@@ -69,7 +69,8 @@ func writeDecisionTableSection(sb *strings.Builder, d model.Decision, defs *mode
 	if len(dt.Outputs) > 0 {
 		parts := make([]string, 0, len(dt.Outputs))
 		for _, o := range dt.Outputs {
-			parts = append(parts, fmt.Sprintf("`%s` (`%s`)", o.Label, o.TypeRef))
+			name := outputVarName(o)
+			parts = append(parts, fmt.Sprintf("`%s` (`%s`)", name, o.TypeRef))
 		}
 		fmt.Fprintf(sb, "- **outputs** : %s\n", strings.Join(parts, ", "))
 	}
@@ -94,7 +95,8 @@ func writeDecisionTableSection(sb *strings.Builder, d model.Decision, defs *mode
 		fmt.Fprintf(sb, " %s<br/>`%s` |", inp.Label, inp.InputExpression.Text)
 	}
 	for _, out := range dt.Outputs {
-		fmt.Fprintf(sb, " %s |", out.Label)
+		name := outputVarName(out)
+		fmt.Fprintf(sb, " %s<br/>`%s` |", out.Label, name)
 	}
 	sb.WriteString("\n")
 
@@ -129,6 +131,11 @@ func writeDecisionTableSection(sb *strings.Builder, d model.Decision, defs *mode
 
 func writeLiteralExpressionSection(sb *strings.Builder, d model.Decision, defs *model.Definitions) {
 	fmt.Fprintf(sb, "- **Type** : Literal Expression\n")
+
+	if d.Variable != nil {
+		fmt.Fprintf(sb, "- **outputs** : `%s` (`%s`)\n", d.Variable.Name, d.Variable.TypeRef)
+	}
+
 	writeDependencies(sb, d, defs)
 	fmt.Fprintf(sb, "\n")
 
@@ -166,21 +173,27 @@ func writeDataDictionary(sb *strings.Builder, defs *model.Definitions) {
 	var entries []entry
 
 	for _, d := range defs.Decisions {
-		if d.DecisionTable == nil {
-			continue
-		}
-		for _, inp := range d.DecisionTable.Inputs {
-			name := inp.InputExpression.Text
-			if !seen[name] {
-				seen[name] = true
-				entries = append(entries, entry{name, inp.InputExpression.TypeRef, "Input"})
+		if d.DecisionTable != nil {
+			for _, inp := range d.DecisionTable.Inputs {
+				name := inp.InputExpression.Text
+				if !seen[name] {
+					seen[name] = true
+					entries = append(entries, entry{name, inp.InputExpression.TypeRef, "Input"})
+				}
+			}
+			for _, out := range d.DecisionTable.Outputs {
+				name := outputVarName(out)
+				if !seen[name] {
+					seen[name] = true
+					entries = append(entries, entry{name, out.TypeRef, "Output"})
+				}
 			}
 		}
-		for _, out := range d.DecisionTable.Outputs {
-			name := out.Label
+		if d.LiteralExpression != nil && d.Variable != nil {
+			name := d.Variable.Name
 			if !seen[name] {
 				seen[name] = true
-				entries = append(entries, entry{name, out.TypeRef, "Output"})
+				entries = append(entries, entry{name, d.Variable.TypeRef, "Output"})
 			}
 		}
 	}
@@ -195,6 +208,15 @@ func writeDataDictionary(sb *strings.Builder, defs *model.Definitions) {
 	for _, e := range entries {
 		fmt.Fprintf(sb, "| `%s` | `%s` | %s | — |\n", e.Name, e.Type, e.Role)
 	}
+}
+
+// outputVarName returns the FEEL variable name for an output column,
+// preferring the name attribute over the label when both are present.
+func outputVarName(o model.Output) string {
+	if o.Name != "" {
+		return o.Name
+	}
+	return o.Label
 }
 
 func decisionType(d model.Decision) string {
