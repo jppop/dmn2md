@@ -12,6 +12,7 @@ type Decision struct {
 	ID                      string                   `xml:"id,attr"`
 	Name                    string                   `xml:"name,attr"`
 	InformationRequirements []InformationRequirement `xml:"informationRequirement"`
+	Variable                *Variable                `xml:"variable"`
 	DecisionTable           *DecisionTable           `xml:"decisionTable"`
 	LiteralExpression       *LiteralExpression       `xml:"literalExpression"`
 }
@@ -27,8 +28,16 @@ type RequiredDecision struct {
 	Href string `xml:"href,attr"`
 }
 
+// Variable représente un élément <variable> déclarant la sortie d'une décision.
+type Variable struct {
+	ID      string `xml:"id,attr"`
+	Name    string `xml:"name,attr"`
+	TypeRef string `xml:"typeRef,attr"`
+}
+
 // LiteralExpression représente un élément <literalExpression>.
 type LiteralExpression struct {
+	ID   string `xml:"id,attr"`
 	Text string `xml:"text"`
 }
 
@@ -50,6 +59,7 @@ type Input struct {
 
 // InputExpression représente l'expression d'une colonne d'entrée.
 type InputExpression struct {
+	ID      string `xml:"id,attr"`
 	TypeRef string `xml:"typeRef,attr"`
 	Text    string `xml:"text"`
 }
@@ -58,12 +68,14 @@ type InputExpression struct {
 type Output struct {
 	ID      string `xml:"id,attr"`
 	Label   string `xml:"label,attr"`
+	Name    string `xml:"name,attr"`
 	TypeRef string `xml:"typeRef,attr"`
 }
 
 // Rule représente une ligne de la table (<rule>).
 type Rule struct {
 	ID            string  `xml:"id,attr"`
+	Description   string  `xml:"description"`
 	InputEntries  []Entry `xml:"inputEntry"`
 	OutputEntries []Entry `xml:"outputEntry"`
 }
