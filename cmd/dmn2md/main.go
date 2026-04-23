@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var mode string
+
 var rootCmd = &cobra.Command{
 	Use:   "dmn2md <file.dmn>",
 	Short: "Convert a DMN decision table to Markdown",
@@ -18,9 +20,14 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Print(renderer.Render(defs))
+		fmt.Print(renderer.Render(defs, renderer.Mode(mode)))
 		return nil
 	},
+}
+
+func init() {
+	rootCmd.Flags().StringVarP(&mode, "mode", "m", string(renderer.ModeDoc),
+		`output format: "doc" (human-readable) or "skill" (Claude Code slash command)`)
 }
 
 func main() {
