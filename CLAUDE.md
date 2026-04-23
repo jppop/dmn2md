@@ -2,18 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# dmn2md — Convertisseur DMN → Markdown pour Claude Code
+# dmn2md — DMN → Markdown Converter for Claude Code
 
-## Contexte du projet
-Outil CLI Go qui parse des fichiers DMN (Decision Model and Notation, format XML)
-et génère du Markdown structuré pour une lecture plus aisée ou éventuellement utilisable comme skills ou rules Claude Code (le format de sortie est chois par une option CLI).
+## Project context
+Go CLI tool that parses DMN (Decision Model and Notation, XML format) files
+and generates structured Markdown for easier reading, optionally usable as Claude Code skills or rules (the output format is selected via a CLI option).
 
-Module Go : `github.com/jppop/dmn2md`
+Go module: `github.com/jppop/dmn2md`
 
-Développeur : background Java expérimenté, débutant en Go.
-→ Toujours expliquer les idiomes Go avec des analogies Java quand c'est utile.
+Developer: experienced Java background, beginner in Go.
 
-## Commandes essentielles
+## Essential commands
 
 ```bash
 # Build
@@ -22,60 +21,58 @@ go build ./...
 # Run
 go run cmd/dmn2md/main.go fichier.dmn
 
-# Build binaire
+# Build binary
 go build -o dmn2md cmd/dmn2md/main.go
 
-# Tests (tous)
+# Tests (all)
 go test ./...
 
-# Tests verbeux
+# Verbose tests
 go test -v ./...
 
-# Tests d'un package spécifique
+# Tests for a specific package
 go test -v ./internal/parser/...
 
-# Un seul test par nom
+# Single test by name
 go test -v -run TestNomDuTest ./internal/parser/...
 
 # Linter
 golangci-lint run
 
-# Formater le code
+# Format code
 gofumpt -w .
 ```
 
-## Architecture cible
-
-Le projet est en cours d'initialisation. Seul `cmd/dmn2md/main.go` existe aujourd'hui.
-Les packages `internal/` sont à créer selon la structure ci-dessous :
+## Target architecture
 
 ```
 dmn2md/
-├── cmd/dmn2md/main.go       # Point d'entrée CLI (cobra) — ≈ Main class Java
+├── cmd/dmn2md/main.go       # CLI entry point (cobra) — ≈ Java Main class
 ├── internal/
-│   ├── model/               # Structs DMN — ≈ POJOs / Records Java
+│   ├── model/               # DMN structs — ≈ Java POJOs / Records
 │   │   └── dmn.go           # DecisionTable, Rule, InputEntry, OutputEntry
-│   ├── parser/              # Lecture XML → model — ≈ Parser/Deserializer
+│   ├── parser/              # XML → model — ≈ Parser/Deserializer
 │   │   └── parser.go
 │   └── renderer/            # model → Markdown — ≈ Formatter/Serializer
-│       ├── markdown.go      # Tables Markdown classiques
-│       └── skill.go         # Format structuré Claude Code skill/command
+│       ├── markdown.go      # Standard Markdown tables
+│       ├── rule.go          # Claude Code rule format
+│       └── skill.go         # Claude Code skill/command format
 ├── testdata/
-│   ├── dmn/                 # Fichiers .dmn de test (eligibilite.dmn existe)
-│   └── expected/            # Markdown attendu (golden files, à créer)
+│   ├── dmn/                 # Test .dmn files
+│   └── expected/            # Expected Markdown (golden files)
 └── CLAUDE.md
 ```
 
-## Modèle DMN ciblé
+## Target DMN model
 
-Le DMN est du XML. Structure principale à parser :
-- `<definitions>` → racine
-- `<decision>` → une table de décision
-- `<decisionTable hitPolicy="...">` → contient inputs, outputs, rules
-- `<input>` / `<output>` → colonnes (avec `label` et `inputExpression`)
-- `<rule>` → une ligne = N inputEntry + M outputEntry
+DMN is XML. Main structure to parse:
+- `<definitions>` → root
+- `<decision>` → a decision table
+- `<decisionTable hitPolicy="...">` → contains inputs, outputs, rules
+- `<input>` / `<output>` → columns (with `label` and `inputExpression`)
+- `<rule>` → one row = N inputEntry + M outputEntry
 
-Namespace XML utilisé : `https://www.omg.org/spec/DMN/20191111/MODEL/`
+XML namespace: `https://www.omg.org/spec/DMN/20191111/MODEL/`
 
 ## Markdown Output Format
 
@@ -133,22 +130,14 @@ Example of result file: @.claude/decision-sample.md
 - Decision nodes use `[name]` shape
 - Arrows represent informationRequirement: dependency --> decision
 
-## Conventions Go à respecter
-- Gestion d'erreur explicite : toujours `if err != nil`, jamais ignorer avec `_`
-- Pas de `interface{}` / `any` si un type concret est possible
-- Structs avec tags XML pour le parsing : `xml:"tagName"`
-- Tests avec testify : `assert.Equal`, `require.NoError`
-- Golden files pour les tests de rendu (comparer output avec fichier attendu)
+## Go conventions
+- Explicit error handling: always `if err != nil`, never ignore with `_`
+- No `interface{}` / `any` when a concrete type is possible
+- Structs with XML tags for parsing: `xml:"tagName"`
+- Tests with testify: `assert.Equal`, `require.NoError`
+- Golden files for rendering tests (compare output with expected file)
 
-## Analogies Java → Go
-- `struct` + méthodes = class Java (sans héritage)
-- `interface` Go = interface Java mais implicite (pas de `implements`)
-- `error` return = checked exception Java mais explicite à chaque appel
-- `encoding/xml` = JAXB / Jackson XML en Java
-- slice `[]Rule` = `List<Rule>` Java
-- `map[string]string` = `Map<String,String>` Java
-
-## Ce qu'il ne faut pas faire
-- Ne pas utiliser `panic()` sauf bug interne réel (≠ erreur utilisateur)
-- Ne pas ignorer les erreurs avec `_` sur des I/O
-- Ne pas mettre de logique métier dans `main.go`
+## What not to do
+- Do not use `panic()` except for genuine internal bugs (≠ user errors)
+- Do not ignore errors with `_` on I/O
+- Do not put business logic in `main.go`
