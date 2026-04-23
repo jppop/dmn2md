@@ -36,7 +36,7 @@ go build -o dmn2md cmd/dmn2md/main.go
 ### Quick install
 
 ```bash
-go install github.com/jppop/dmn2md@latest
+go install github.com/jppop/dmn2md/cmd/dmn2md@latest
 ```
 
 ## Usage
