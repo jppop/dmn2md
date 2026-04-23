@@ -70,12 +70,16 @@ dmn2md --mode skill loan-approval.dmn > .claude/commands/loan-approval.md
 # Then invoke it inside Claude Code with: /loan-approval
 ```
 
+See [`examples/skill-from-dmn.md`](examples/skill-from-dmn.md) for a full walkthrough.
+
 **Generate a Claude behavioral rule**
 
 ```bash
 dmn2md --mode rule loan-approval.dmn > .claude/rules/loan-approval.md
 # Claude now applies these rules automatically whenever the topic arises
 ```
+
+See [`examples/rule-from-dmn.md`](examples/rule-from-dmn.md) for a full walkthrough.
 
 **Write to a file (general pattern)**
 
