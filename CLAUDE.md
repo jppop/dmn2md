@@ -10,8 +10,6 @@ and generates structured Markdown for easier reading, optionally usable as Claud
 
 Go module: `github.com/jppop/dmn2md`
 
-Developer: experienced Java background, beginner in Go.
-
 ## Essential commands
 
 ```bash
