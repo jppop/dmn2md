@@ -27,7 +27,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.Flags().StringVarP(&mode, "mode", "m", string(renderer.ModeDoc),
-		`output format: "doc" (human-readable) or "skill" (Claude Code slash command)`)
+		`output format: "doc" (human-readable), "skill" (Claude Code slash command), or "rule" (Claude behavioral rule)`)
 }
 
 func main() {

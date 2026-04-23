@@ -14,6 +14,7 @@ type Mode string
 const (
 	ModeDoc   Mode = "doc"
 	ModeSkill Mode = "skill"
+	ModeRule  Mode = "rule"
 )
 
 // Render converts DMN Definitions into Markdown in the requested format.
@@ -21,6 +22,8 @@ func Render(defs *model.Definitions, mode Mode) string {
 	switch mode {
 	case ModeSkill:
 		return renderSkill(defs)
+	case ModeRule:
+		return renderRule(defs)
 	default:
 		return renderDoc(defs)
 	}
