@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexte du projet
 Outil CLI Go qui parse des fichiers DMN (Decision Model and Notation, format XML)
-et génère du Markdown structuré utilisable comme skills/commandes Claude Code.
+et génère du Markdown structuré pour une lecture plus aisée ou éventuellement utilisable comme skills ou rules Claude Code (le format de sortie est chois par une option CLI).
 
 Module Go : `github.com/jppop/dmn2md`
 

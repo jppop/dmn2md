@@ -8,8 +8,25 @@ import (
 	"github.com/jppop/dmn2md/internal/model"
 )
 
-// Render converts a DMN Definitions into structured Markdown.
-func Render(defs *model.Definitions) string {
+// Mode controls which output format Render produces.
+type Mode string
+
+const (
+	ModeDoc   Mode = "doc"
+	ModeSkill Mode = "skill"
+)
+
+// Render converts DMN Definitions into Markdown in the requested format.
+func Render(defs *model.Definitions, mode Mode) string {
+	switch mode {
+	case ModeSkill:
+		return renderSkill(defs)
+	default:
+		return renderDoc(defs)
+	}
+}
+
+func renderDoc(defs *model.Definitions) string {
 	var sb strings.Builder
 	writeHeader(&sb, defs)
 	writeDRD(&sb, defs)
